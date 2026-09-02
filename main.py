@@ -1,10 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
+import json
 from openai import OpenAI
 
 app = FastAPI()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 class EmailPayload(BaseModel):
     text: str
 
@@ -31,8 +33,8 @@ def extract_task(payload: EmailPayload):
             response_format={"type": "json_object"}
         )
         
-        result = response.choices[0].message.content
-        return {"status": "success", "data": eval(result)}
+        content = response.choices[0].message.content
+        return json.loads(content)
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
