@@ -27,7 +27,7 @@ const { data: user, error } = await supabase
             console.error("User not found for token:", userToken);
             return res.status(401).json({ error: "Unauthorized: Token not found in database", tokenSearched: userToken });
         }
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const prompt = `Extract the exact deadline timestamp from this email text. Return ONLY a valid ISO timestamp format (e.g. 2026-09-10T15:00:00Z):\n\n${emailBody}`;
         
         const aiResult = await model.generateContent(prompt);
