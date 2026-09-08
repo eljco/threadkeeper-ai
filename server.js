@@ -12,18 +12,21 @@ app.post('/inbound-email', async (req, res) => {
     try {
         const { recipient, emailBody, emailSubject } = req.body;
         const userToken = recipient.split('@')[0];
-
-      const { data: user, error } = await supabase
+const { data: user, error } = await supabase
             .from('threadkeeper_users')
             .select('*')
             .eq('token', userToken)
-            .single();
+            .maybeSingle();
 
-        if (error || !user) {
-            console.error("Supabase lookup error:", error); // <-- Add this line
-            return res.status(401).json({ error: "Unauthorized: Invalid token", details: error });
+        if (error) {
+            console.error("Supabase Database Error:", error);
+            return res.status(500).json({ error: "Database error", details: error.message });
         }
 
+        if (!user) {
+            console.error("User not found for token:", userToken);
+            return res.status(401).json({ error: "Unauthorized: Token not found in database", tokenSearched: userToken });
+        }
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `Extract the exact deadline timestamp from this email text. Return ONLY a valid ISO timestamp format (e.g. 2026-09-10T15:00:00Z):\n\n${emailBody}`;
         
