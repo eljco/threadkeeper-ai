@@ -13,14 +13,15 @@ app.post('/inbound-email', async (req, res) => {
         const { recipient, emailBody, emailSubject } = req.body;
         const userToken = recipient.split('@')[0];
 
-        const { data: user, error } = await supabase
+      const { data: user, error } = await supabase
             .from('threadkeeper_users')
             .select('*')
             .eq('token', userToken)
             .single();
 
         if (error || !user) {
-            return res.status(401).json({ error: "Unauthorized: Invalid token" });
+            console.error("Supabase lookup error:", error); // <-- Add this line
+            return res.status(401).json({ error: "Unauthorized: Invalid token", details: error });
         }
 
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
